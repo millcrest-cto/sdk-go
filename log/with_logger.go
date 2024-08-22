@@ -24,6 +24,8 @@
 
 package log
 
+import "runtime/debug"
+
 // With creates a child Logger that includes the supplied key-value pairs in each log entry. It does this by
 // using the supplied logger if it implements WithLogger; otherwise, it does so by intercepting every log call.
 func With(logger Logger, keyvals ...interface{}) Logger {
@@ -55,7 +57,12 @@ func newWithLogger(logger Logger, keyvals ...interface{}) *withLogger {
 	return &withLogger{logger: Skip(logger, 1), keyvals: keyvals}
 }
 
+func getStackTrace() string {
+	return string(debug.Stack())
+}
+
 func (l *withLogger) prependKeyvals(keyvals []interface{}) []interface{} {
+	keyvals = append(keyvals, "stack", getStackTrace())
 	return append(l.keyvals, keyvals...)
 }
 
